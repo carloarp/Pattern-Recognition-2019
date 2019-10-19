@@ -28,7 +28,7 @@ def print_image(face_image):
 	face_image = np.reshape(face_image, (46,56))
 	face_image = face_image.T
 	plt.imshow(face_image, cmap='gist_gray')
-	#plt.show()
+	plt.show()
 
 mat_content = loadmat('face(1).mat')			# unpacks the .mat file
 
