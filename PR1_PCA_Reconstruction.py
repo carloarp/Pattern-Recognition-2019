@@ -1,17 +1,5 @@
-### Data provided: face(1).mat
-### Partition the provided face data face(1).mat into training and testing data in a way you choose
-### Explain briefly the way you partitioned
-
-### Apply PCA to your training data
-### i.e. Compute the eigenvectors and eigenvalues of the Covariance Matrix S = (1/N)AA^T directly
-
-### Show and discuss:
-### 1. eigenvectors and eigenvalues 
-### 2. mean image
-### 3. eigenvectors with non-zero values
-### 4. how many eigenvectors are to be used for face recognition
-
-### Give physical meanings behind your answers
+### Reconstructs an image using PCA
+### Plots different samples of images with varying M
 
 # Importing depdendencies
 import numpy as np
@@ -24,28 +12,28 @@ import os
 
 from scipy.io import loadmat
 from sklearn.decomposition import PCA
-										# comment out this code when running on jupyter
+								# comment out this code when running on jupyter
 dir = os.getcwd()						# gets the working directory of the file this python script is in
 os.chdir (dir)							# changes the working directory to the file this python script is in
-										# also change plt.savefig to plt.show
+								# also change plt.savefig to plt.show
 										
-def print_image(face_image):			# function for plotting an image
+def print_image(face_image):					# function for plotting an image
 	face_image = np.reshape(face_image, (46,56))
 	face_image = face_image.T
 	plt.imshow(face_image, cmap='gist_gray')
 	plt.show()
 
-def save_image(face_image,title):		# function for saving an image
+def save_image(face_image,title):				# function for saving an image
 	face_image = np.reshape(face_image, (46,56))
 	face_image = face_image.T
 	plt.imshow(face_image, cmap='gist_gray')
 	plt.title(title)
 	plt.savefig(title)
 
-mat_content = loadmat('face(1).mat')			# unpacks the .mat file
+mat_content = loadmat('face(1).mat')				# unpacks the .mat file
 
 print("\n")
-print("Showing contents of the .mat file:")		# shows the contents of the .mat file
+print("Showing contents of the .mat file:")			# shows the contents of the .mat file
 print(mat_content)
 
 # Array 'X' contains the face data	
@@ -201,15 +189,15 @@ print("Number of non-negative and non-zero Low-Dimension Eigenvalues = ", number
 
 #### FACE IMAGE RECONSTRUCTION
 X_train = x_train.squeeze()				# This is the matrix that contains all of the face training data
-Y_train = y_train						# This is the matrix that contains all of the labels for the training data
+Y_train = y_train					# This is the matrix that contains all of the labels for the training data
 training_face0 = X_train[0]
 training_face0 = np.array(training_face0)[np.newaxis]
 
 print("A Training Face has shape: ", training_face0.shape)
 print("Average Training Face has shape: ", average_training_face.shape, "\n")
 
-M_list_hd = [1,2,3,4,5,6,7,8,9,10,100,416,1000,1497,2576]	# list that contains values of M_hd to try
-M_list_ld = [1,2,3,4,5,6,7,8,9,10,100,416]					# list that contains values of M-ld to try
+M_list_hd = [1,2,3,4,5,6,7,8,9,10,100,416,1000,1497,2576]		# list that contains values of M_hd to try
+M_list_ld = [1,2,3,4,5,6,7,8,9,10,100,416]				# list that contains values of M-ld to try
 #M_list_hd = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]			# sample list for obtaining a 
 #M_list_ld = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 cols_hd = len(M_list_hd)
