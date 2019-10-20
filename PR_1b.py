@@ -125,7 +125,7 @@ average_training_face = sum_of_training_faces/train_size
 print("Mean Face = ", average_training_face, "\n")
 
 #print_image(average_training_face)
-save_image(average_training_face,"Average Training Face")
+#save_image(average_training_face,"Average Training Face")
 
 #### COVARIANCE MATRIX
 A = []
@@ -163,6 +163,37 @@ print(covariance_matrix_hd, "\n")
 print("Covariance Matrix (Low-Dimension) = ")
 print(covariance_matrix_ld, "\n")
 
+#### SHOW TOP M EIGENFACES
+from scipy.linalg import eigh
+
+max_length_hd = covariance_matrix_hd.shape[0]-1
+max_length_ld = covariance_matrix_ld.shape[0]-1
+
+eigenval_hd, eigenvec_hd = eigh(covariance_matrix_hd) 
+idx_hd = eigenval_hd.argsort()[::-1]
+eigenval_hd = eigenval_hd[idx_hd]
+eigenvec_hd = eigenvec_hd[:,idx_hd]
+
+def plot_top_M_eigenfaces(eigenvec,M):
+	cols = 10
+	rows = M/cols
+	index = 1
+	font_size = 10
+	plt.figure(figsize=(20,20))
+	for i in range(0,M):
+		print(eigenvec[:,i].shape)
+		sys.exit()
+		plt.subplot(rows,cols,index),plt.imshow(np.reshape(eigenvec[:,i],(46,56)).T, cmap = 'gist_gray')
+		face_title = str("M="+str(i+1))
+		plt.title(face_title, fontsize=font_size).set_position([0.5,0.95]), plt.xticks([]), plt.yticks([])	# set_position([a,b]) adjust b for height
+		index = index+1
+	overall_title = str("Top "+str(M)+" Eigenfaces for High-Dim PCA")
+	plt.suptitle(overall_title)
+	plt.show()
+
+M = 50
+plot_top_M_eigenfaces(eigenvec_hd,M)
+
 #### EIGENVALUES AND EIGENVECTORS
 start_time=time.time()
 eigenvalues_hd, eigenvectors_hd = np.linalg.eig(covariance_matrix_hd)	# obtain eigenvalues and eigenvectors from the high-dimension covariance matrix
@@ -177,9 +208,9 @@ print("Low-Dimension eigenvalues = ")
 print(eigenvalues_ld, "\n")
 
 print("High-Dimension Eigenvectors = ")
-print(eigenvectors_hd, "\n")
+print(eigenvectors_hd.real, "\n")
 print("Low-Dimension Eigenvectors = ")
-print(eigenvectors_ld, "\n")
+print(eigenvectors_ld.real, "\n")
 
 print("Time taken to obtain High-Dim Eigenvalues and Eigenvectors: ", eigenvalues_hd_eigenvectors_hd_time, "s")
 print("Time taken to obtain Low-Dim Eigenvalues and Eigenvectors: ", eigenvalues_ld_eigenvectors_ld_time, "s \n")
