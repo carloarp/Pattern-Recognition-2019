@@ -1,17 +1,8 @@
-### Data provided: face(1).mat
-### Partition the provided face data face(1).mat into training and testing data in a way you choose
-### Explain briefly the way you partitioned
-
-### Apply PCA to your training data
-### i.e. Compute the eigenvectors and eigenvalues of the Covariance Matrix S = (1/N)AA^T directly
-
-### Show and discuss:
-### 1. eigenvectors and eigenvalues 
-### 2. mean image
-### 3. eigenvectors with non-zero values
-### 4. how many eigenvectors are to be used for face recognition
-
-### Give physical meanings behind your answers
+### Finds the High and Low Dimension:
+### 1. Covariance Matrix
+### 2. Eigenvalues and Eigenvectors
+### 3. Non-zero and Non-negative Eigenvectors and Eigenvalues
+### 4. Compare High- and Low-Dimension Eigenvalues
 
 ### Importing depdendencies
 import numpy as np
