@@ -13,7 +13,7 @@
 
 ### Give physical meanings behind your answers
 
-# Importing depdendencies
+### Importing depdendencies
 import numpy as np
 import matplotlib as plt
 import matplotlib.pyplot as plt
