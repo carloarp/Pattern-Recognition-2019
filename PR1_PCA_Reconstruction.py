@@ -1,5 +1,6 @@
-### Reconstructs an image using PCA
-### Plots different samples of images with varying M
+### Reconstructs the original image using High- and Low-Dimension PCA
+
+### Plots the top M Eigenfaces
 
 # Importing depdendencies
 import numpy as np
@@ -12,28 +13,30 @@ import os
 
 from scipy.io import loadmat
 from sklearn.decomposition import PCA
-								# comment out this code when running on jupyter
-dir = os.getcwd()						# gets the working directory of the file this python script is in
-os.chdir (dir)							# changes the working directory to the file this python script is in
-								# also change plt.savefig to plt.show
+										# comment out this code when running on jupyter
+dir = os.getcwd()								# gets the working directory of the file this python script is in
+os.chdir (dir)									# changes the working directory to the file this python script is in
+										# also change plt.savefig to plt.show
 										
-def print_image(face_image):					# function for plotting an image
+def print_image(face_image):			# function for plotting an image
 	face_image = np.reshape(face_image, (46,56))
 	face_image = face_image.T
 	plt.imshow(face_image, cmap='gist_gray')
 	plt.show()
+	plt.close()
 
-def save_image(face_image,title):				# function for saving an image
+def save_image(face_image,title):		# function for saving an image
 	face_image = np.reshape(face_image, (46,56))
 	face_image = face_image.T
 	plt.imshow(face_image, cmap='gist_gray')
 	plt.title(title)
 	plt.savefig(title)
+	plt.close()
 
-mat_content = loadmat('face(1).mat')				# unpacks the .mat file
+mat_content = loadmat('face(1).mat')			# unpacks the .mat file
 
 print("\n")
-print("Showing contents of the .mat file:")			# shows the contents of the .mat file
+print("Showing contents of the .mat file:")		# shows the contents of the .mat file
 print(mat_content)
 
 # Array 'X' contains the face data	
@@ -89,12 +92,8 @@ print("Sum of Training Faces = ", sum_of_training_faces, "\n")
 average_training_face = sum_of_training_faces/train_size
 print("Mean Face = ", average_training_face, "\n")
 
-#print_image(average_training_face)
-#save_image(average_training_face,"Average Training Face")
-
 #### COVARIANCE MATRIX
 A = []
-
 for i in range(0,train_size):
 	phi = x_train[:,i]-average_training_face
 	phi = np.array(phi)
@@ -108,8 +107,9 @@ for i in range(0,train_size):
 		A = np.append(A, phi, axis=0)
 
 covariance_matrix_hd = np.dot(A.T,A)/train_size
-
 covariance_matrix_ld = np.dot(A,A.T)/train_size
+
+print("A has shape: ", A.shape, "\n")
 
 print("Covariance Matrix (High-Dimension) has shape: ", covariance_matrix_hd.shape)
 print("Covariance Matrix (Low-Dimension) has shape: ", covariance_matrix_ld.shape, "\n")
@@ -119,94 +119,35 @@ print(covariance_matrix_hd, "\n")
 print("Covariance Matrix (Low-Dimension) = ")
 print(covariance_matrix_ld, "\n")
 
-#### EIGENVALUES AND EIGENVECTORS
-eigenvalues_hd, eigenvectors_hd = np.linalg.eig(covariance_matrix_hd)	# obtain eigenvalues and eigenvectors from the high-dimension covariance matrix
-eigenvalues_ld, eigenvectors_ld = np.linalg.eig(covariance_matrix_ld)	# obtain eigenvalues and eigenvectors from the low-dimension covariance matrix
+#### SHOW TOP M EIGENFACES
+from scipy.linalg import eigh
 
-print("High-Dimension eigenvalues = ")
-print(eigenvalues_hd, "\n")
-print("Low-Dimension eigenvalues = ")
-print(eigenvalues_ld, "\n")
+max_length_hd = covariance_matrix_hd.shape[0]-1
+max_length_ld = covariance_matrix_ld.shape[0]-1
 
-print("High-Dimension Eigenvectors = ")
-print(eigenvectors_hd.real, "\n")
-print("Low-Dimension Eigenvectors = ")
-print(eigenvectors_ld.real, "\n")
-
-#### SORT EIGENVALUES AND EIGENVECTORS FROM HIGHEST TO LOWEST
+eigenvalues_hd, eigenvectors_hd = eigh(covariance_matrix_hd) 
 idx_hd = eigenvalues_hd.argsort()[::-1]
 eigenvalues_hd = eigenvalues_hd[idx_hd]
 eigenvectors_hd = eigenvectors_hd[:,idx_hd]
 
+eigenvalues_ld, eigenvectors_ld = eigh(covariance_matrix_ld) 
 idx_ld = eigenvalues_ld.argsort()[::-1]
 eigenvalues_ld = eigenvalues_ld[idx_ld]
 eigenvectors_ld = eigenvectors_ld[:,idx_ld]
 
-print("Number of High-Dimension eigenvalues: ", eigenvalues_hd.shape[0])
-print("Number of High-Dimension eigenvectors: ", eigenvectors_hd.shape, "\n")
-print("Number of Low-Dimension eigenvalues: ", eigenvalues_ld.shape[0])
-print("Number of Low-Dimension eigenvectors: ", eigenvectors_ld.shape, "\n")
+print("A HD eigenvector has shape ", np.array(eigenvectors_hd[0])[np.newaxis].shape)
+print("A LD eigenvector has shape ", np.array(eigenvectors_ld[0])[np.newaxis].shape,"\n")
 
-number_of_eigenvalues_hd = eigenvalues_hd.shape[0]
-number_of_eigenvalues_ld = eigenvalues_ld.shape[0]
+M_list_hd = [200,400,416,600,800,1000,1200,1497,1600,1800,2000,2200,2400,2576]		# list that contains values of M_hd to try
+M_list_ld = [10,20,30,40,50,60,70,80,90,100,200,300,400,416]					# list that contains values of M-ld to try
 
-#### COUNT THE NUMBER OF EIGENVECTORS WITH NON-ZERO AND NON-NEGATIVE EIGENVALUES
-eigenvalues_hd_array = []
-eigenvectors_hd_array = []
-eigenvalues_hd_index_array = []
-number_of_non_zero_eigenvalues_hd = 0
-number_of_non_negative_eigenvalues_hd = 0
-for i in range(0, number_of_eigenvalues_hd):
-	if eigenvalues_hd[i].real != 0: 
-		number_of_non_zero_eigenvalues_hd = number_of_non_zero_eigenvalues_hd + 1
-		eigenvalues_hd_array.append(eigenvalues_hd[i].real)
-		eigenvectors_hd_array.append(eigenvectors_hd[i])
-		eigenvalues_hd_index_array.append(i)
-		
-	if eigenvalues_hd[i].real > 0:
-		number_of_non_negative_eigenvalues_hd = number_of_non_negative_eigenvalues_hd + 1
-		
-eigenvalues_ld_array = []
-eigenvectors_ld_array = []
-eigenvalues_ld_index_array = []		
-number_of_non_zero_eigenvalues_ld = 0
-number_of_non_negative_eigenvalues_ld = 0		
-for i in range(0, number_of_eigenvalues_ld):
-	if eigenvalues_ld[i].real != 0: 
-		number_of_non_zero_eigenvalues_ld = number_of_non_zero_eigenvalues_ld + 1
-		eigenvalues_ld_array.append(eigenvalues_ld[i].real)
-		eigenvectors_ld_array.append(eigenvectors_ld[i])
-		eigenvalues_ld_index_array.append(i)
-	
-	if eigenvalues_ld[i].real > 0:
-		number_of_non_negative_eigenvalues_ld = number_of_non_negative_eigenvalues_ld + 1
-
-print("Number of non-zero High-Dimension Eigenvalues = ", number_of_non_zero_eigenvalues_hd)
-print("Number of non-zero Low-Dimension Eigenvalues = ", number_of_non_zero_eigenvalues_ld, "\n")
-
-print("Number of non-negative and non-zero High-Dimension Eigenvalues = ", number_of_non_negative_eigenvalues_hd)
-print("Number of non-negative and non-zero Low-Dimension Eigenvalues = ", number_of_non_negative_eigenvalues_ld, "\n")
-
-#### FACE IMAGE RECONSTRUCTION
-X_train = x_train.squeeze()				# This is the matrix that contains all of the face training data
-Y_train = y_train					# This is the matrix that contains all of the labels for the training data
-training_face0 = X_train[0]
-training_face0 = np.array(training_face0)[np.newaxis]
-
-print("A Training Face has shape: ", training_face0.shape)
-print("Average Training Face has shape: ", average_training_face.shape, "\n")
-
-M_list_hd = [1,2,3,4,5,6,7,8,9,10,100,416,1000,1497,2576]		# list that contains values of M_hd to try
-M_list_ld = [1,2,3,4,5,6,7,8,9,10,100,416]				# list that contains values of M-ld to try
-#M_list_hd = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]			# sample list for obtaining a 
-#M_list_ld = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 cols_hd = len(M_list_hd)
 cols_ld = len(M_list_ld)
 
 sample_list = [0,2,3,4,5,6]
 rows = len(sample_list)
 
-def reconstruct_image_PCA(rows,cols,X_train,Y_train,A,eigenvectors,sample_list,M_list,average_training_face,main_title):
+def reconstruct_image_HD_PCA(rows,cols,X_train,Y_train,A,eigenvectors,sample_list,M_list,average_training_face,main_title):
 	index = 1
 	font_size = 10
 	count = 1
@@ -219,26 +160,25 @@ def reconstruct_image_PCA(rows,cols,X_train,Y_train,A,eigenvectors,sample_list,M
 		plt.subplot(rows+1,cols+1,index), plt.imshow(np.reshape(face_sample,(46,56)).T, cmap = 'gist_gray')
 
 		title = str("F"+str(Y_train[sample])+"-Original")
-		plt.title(title, fontsize=font_size), plt.xticks([]), plt.yticks([])
+		plt.title(title, fontsize=font_size).set_position([0.5,0.95]), plt.xticks([]), plt.yticks([])
 		index=index+1
+		
+		phi = x_train[:,sample]-average_training_face
+		phi = np.array(phi)
 		
 		for M in M_list:
 			reconstructed_image = average_training_face
 			for i in range(0,M):
 				print(main_title, ": F",Y_train[sample], "[", count, "/", rows, "] with M =", M, "... ( M = ", i, "/", M, ")    ", end="\r")
-				
-				### We have calculated A = [phi_0, phi_1, .... phi_n] where n is the number of training faces, cardinality = nSize
-				### A[0] = phi_0, A[1] = phi_1
-				phi = np.array(A[sample])[np.newaxis]	
 
 				u = np.array(eigenvectors[i].real)[np.newaxis]
-				a = np.dot(phi.T, u)
-				au = np.dot(a,u.T)
-				reconstructed_image = reconstructed_image + au.T
+				a = np.dot(u, phi.T)
+				au = a*u
+				reconstructed_image = reconstructed_image + au
 				
 			title = str("F"+str(Y_train[sample])+" [M=" + str(M) + "]")
 			plt.subplot(rows+1,cols+1,index), plt.imshow(np.reshape(reconstructed_image,(46,56)).T, cmap = 'gist_gray')
-			plt.title(title, fontsize=font_size), plt.xticks([]), plt.yticks([])
+			plt.title(title, fontsize=font_size).set_position([0.5,0.95]), plt.xticks([]), plt.yticks([])
 			index = index+1
 			
 			reconstructed_image = 0
@@ -249,8 +189,49 @@ def reconstruct_image_PCA(rows,cols,X_train,Y_train,A,eigenvectors,sample_list,M
 	#plt.show()
 	plt.close()
 	
-reconstruct_image_PCA(rows,cols_hd,X_train,Y_train,A,eigenvectors_hd,sample_list,M_list_hd,average_training_face,"High-Dim PCA Reconstruction")
-print("\n")
-reconstruct_image_PCA(rows,cols_ld,X_train,Y_train,A,eigenvectors_ld,sample_list,M_list_ld,average_training_face,"Low-Dim PCA Reconstruction")
+def reconstruct_image_LD_PCA(rows,cols,X_train,Y_train,A,eigenvectors,sample_list,M_list,average_training_face,main_title):
+	index = 1
+	font_size = 10
+	count = 1
+	plt.figure(figsize=(20,10))
+	for sample in sample_list:
+		
+		face_sample = X_train[sample]							# using training_face[sample] as the training sample
+		face_sample = np.array(face_sample)[np.newaxis]
+		
+		plt.subplot(rows+1,cols+1,index), plt.imshow(np.reshape(face_sample,(46,56)).T, cmap = 'gist_gray')
 
-sys.exit()
+		title = str("F"+str(Y_train[sample])+"-Original")
+		plt.title(title, fontsize=font_size).set_position([0.5,0.95]), plt.xticks([]), plt.yticks([])
+		index=index+1
+		
+		phi = x_train[:,sample]-average_training_face
+		phi = np.array(phi)
+		
+		for M in M_list:
+			reconstructed_image = average_training_face
+			for i in range(0,M):
+				print(main_title, ": F",Y_train[sample], "[", count, "/", rows, "] with M =", M, "... ( M = ", i, "/", M, ")    ", end="\r")
+
+				v = np.array(eigenvectors[i].real)[np.newaxis]
+				u = np.dot(v,A)
+				a = np.dot(u, phi.T)
+				au = a*u
+				reconstructed_image = reconstructed_image + au
+				
+			title = str("F"+str(Y_train[sample])+" [M=" + str(M) + "]")
+			plt.subplot(rows+1,cols+1,index), plt.imshow(np.reshape(reconstructed_image,(46,56)).T, cmap = 'gist_gray')
+			plt.title(title, fontsize=font_size).set_position([0.5,0.95]), plt.xticks([]), plt.yticks([])
+			index = index+1
+			
+			reconstructed_image = 0
+			M = 0
+		count = count+1
+	plt.suptitle(main_title)
+	plt.savefig(main_title)
+	#plt.show()
+	plt.close()
+	
+reconstruct_image_HD_PCA(rows,cols_hd,X_train,Y_train,A,eigenvectors_hd,sample_list,M_list_hd,average_training_face,"High-Dim PCA Reconstruction")
+print("\n")
+reconstruct_image_LD_PCA(rows,cols_ld,X_train,Y_train,A,eigenvectors_ld,sample_list,M_list_ld,average_training_face,"Low-Dim PCA Reconstruction")
