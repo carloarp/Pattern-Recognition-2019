@@ -11,6 +11,7 @@ import os
 
 from scipy.io import loadmat
 from sklearn.decomposition import PCA
+from numpy.linalg import norm
 										# comment out this code when running on jupyter
 dir = os.getcwd()						# gets the working directory of the file this python script is in
 os.chdir (dir)							# changes the working directory to the file this python script is in
@@ -240,6 +241,7 @@ def reconstruct_image_LD_PCA(rows,cols,X_train,Y_train,A,eigenvectors,sample_lis
 
 				v = np.array(eigenvectors[i].real)[np.newaxis]
 				u = np.dot(v,A)
+				u = u/norm(u)
 				a = np.dot(u, phi.T)
 				au = a*u
 				reconstructed_image = reconstructed_image + au
