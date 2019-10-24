@@ -651,7 +651,7 @@ sample_list = [0,9,17,25,33,41]														# list of face images to try for PC
 #plot_reconstruction_error(reconstruction_df_hd, reconstruction_df_ld,mode='show')	# mode='save'/'show', reconstruct_image_LD_PCA(mode='error')
 
 #### NN CLASSIFICATION
-M_list_NN = [1,2,3,4,5,6,7,8,9,10,20,30,40,50,60,70,80,90,100,416,2576]
+M_list_NN = [1,2,3,4,5,6,7,8,9,10,20,30,40,50,60,70,80,90,100,416]
 LD_NN_classifier(M_list_NN,A_train,A_test,Y_train,Y_test,eigenvectors_hd,mode='success',save='yes')	# mode='plot time'/'plot rate'/'plot mem'/'print'/'success'/'fail', save=yes/no
 
 sys.exit()
