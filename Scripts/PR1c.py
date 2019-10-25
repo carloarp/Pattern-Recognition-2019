@@ -108,10 +108,10 @@ def calculate_covariance_matrix(x_train,x_test,average_training_face):
 	print("A_train has shape",A_train.shape,":\n",A_train, "\n")
 	print("A_test has shape",A_test.shape,":\n",A_test, "\n")
 	start_time = time.time()
-	high_dimension_covariance_matrix = np.dot(A_train.T,A_train)
+	high_dimension_covariance_matrix = np.dot(A_train.T,A_train)/train_size
 	high_dimension_covariance_matrix_time = time.time() - start_time
 	start_time = time.time()
-	low_dimension_covariance_matrix = np.dot(A_train,A_train.T)
+	low_dimension_covariance_matrix = np.dot(A_train,A_train.T)/train_size
 	low_dimension_covariance_matrix_time = time.time() - start_time
 	print("High-Dimension Covariance Matrix [",np.round(high_dimension_covariance_matrix_time,3), "s ] has shape",high_dimension_covariance_matrix.shape,":\n",high_dimension_covariance_matrix, "\n")
 	print("Low-Dimension Covariance Matrix [",np.round(low_dimension_covariance_matrix_time,3), "s ] has shape",low_dimension_covariance_matrix.shape,":\n",low_dimension_covariance_matrix, "\n")
