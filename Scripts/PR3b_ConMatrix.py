@@ -412,7 +412,6 @@ def main():
 					minimum_error = l2_error
 					label = Y_train[ntrain]
 					pos = ntrain
-					y_predicted[ntest] = label
 			
 			if Y_test[ntest] == label:
 				individual_success = individual_success + 1
@@ -420,6 +419,7 @@ def main():
 			result_list.append(label)	
 			print("T =",T,", Test data =",ntest+1,"/",test_size,", Classifier =",t,",Prediction =",label,end="\r")			
 		majority = most_common(result_list)
+		y_predicted[ntest] = majority
 		if Y_test[ntest] == majority:
 			success = success + 1
 	
