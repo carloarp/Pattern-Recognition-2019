@@ -1,6 +1,5 @@
-### PCA-LDA
-### Varies Mlda while keeping Mpca fixed
-### Plots recognition rate
+### PCA-LDA Ensemble
+### Plots Confusion Matrix based on Best Results
 
 ############################### IMPORT DEPENDENCIES ######################################################
 
