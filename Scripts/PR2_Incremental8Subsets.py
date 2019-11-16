@@ -1,4 +1,5 @@
-### PCA using 2 subsets
+### Incremental PCA using 8 subsets
+### Exports results to .csv
 
 ############################### IMPORT DEPENDENCIES ######################################################
 
