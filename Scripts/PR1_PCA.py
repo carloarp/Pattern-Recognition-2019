@@ -7,6 +7,7 @@
 ### 5. Reconstruction of Faces, Reconstruction Error, Reconstruction Time
 ### 6. Recognition Accuracy(Success Rate), Recognition Time, Memory Usage(psutil)
 ### 7. Confusion Matrix of Best Result
+### 8. Projection of Success and Fail Examples
 
 ############################### IMPORT DEPENDENCIES ######################################################
 
@@ -466,8 +467,214 @@ def plot_confusion_matrix(y_true, y_predicted, M, increase,success_rate,show):
                     true_positives += cm[i,j]
         print('\n')
         print('M = ', M, ', number of true positives = ', true_positives, '\n')
-       	
+  
+def PCA_LDA_success_fail_example(X_train,X_test,x_class,Y_train,Y_test,eigenvector,mode):	
+	
+	def compare_test_train_projections(projected_test,projected_train,predicted,actual,name):		
+		marker_name = str(predicted)	
+		label = predicted	
+				
+		fig = plt.figure()
+		ax = fig.add_subplot(111, projection='3d')
+				
+		### PROJECT PREDICTIONS (BLUE)
+		x_test = projected_test[ntest][0]
+		y_test = projected_test[ntest][1]
+		z_test = projected_test[ntest][2]
+		ax.scatter(x_test,y_test,z_test, c='blue', marker='x', s=20, label='Predicted Data')
+		ax.text(x_test,y_test,z_test,marker_name,color='blue',fontsize=12)
+				
+		if name == 'success':
+			### PROJECT CORRECT CLASS (GREEN)
+			for i in range(0,8):
+				Label = Y_train[(label-1)*8+i]
+				x_train = projected_train[(label-1)*8+i][0]
+				y_train = projected_train[(label-1)*8+i][1]
+				z_train = projected_train[(label-1)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="green", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10, label='Correct Predicted Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10)
+					
+			### PROJECT NEXT 3 CLASSES (BLACK)
+			for i in range(0,24):
+				Label = Y_train[(label)*8+i]
+				x_train = projected_train[(label)*8+i][0]
+				y_train = projected_train[(label)*8+i][1]
+				z_train = projected_train[(label)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="black", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='black', marker='o', s=10, label='Next 3 Training Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='black', marker='o', s=10)
+					
+		if name == 'fail':
+			### PROJECT CORRECT CLASS (GREEN)
+			label = actual
+			for i in range(0,8):
+				Label = Y_train[(label-1)*8+i]
+				x_train = projected_train[(label-1)*8+i][0]
+				y_train = projected_train[(label-1)*8+i][1]
+				z_train = projected_train[(label-1)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="green", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10, label='Correct Predicted Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10)
+					
+			### PROJECT WRONGLY PREDICTED CLASS (RED)
+			label = predicted
+			for i in range(0,8):
+				Label = Y_train[(label-1)*8+i]
+				x_train = projected_train[(label-1)*8+i][0]
+				y_train = projected_train[(label-1)*8+i][1]
+				z_train = projected_train[(label-1)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="red", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='red', marker='^', s=10, label='Wrong Predicted Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='red', marker='^', s=10)
+					
+			### PROJECT NEXT 3 CLASSES (BLACK)
+			for i in range(0,24):
+				Label = Y_train[(label)*8+i]
+				x_train = projected_train[(label)*8+i][0]
+				y_train = projected_train[(label)*8+i][1]
+				z_train = projected_train[(label)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="black", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='black', marker='o', s=10, label='Next 3 Training Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='black', marker='o', s=10)
+			
+		ax.legend(loc = 'lower right')
+		title = str("Projection of "+str(name)+" with Mlda = 51, Mpca=300 into best 3 Principal Components")
+		plt.title(title)
+		plt.show()
+		plt.close()			
+		return None
+	
+	if mode == 'none':
+		return None
+		
+	test_size = len(Y_test)
+	train_size = len(Y_train)
+
+	success = 0
+	success_rate = 0
+	W = eigenvector
+
+	projected_train = np.dot(Wpcalda.T,X_train.T)
+	projected_train = projected_train.T
+			
+	projected_test = np.dot(Wpcalda.T,X_test.T)
+	projected_test = projected_test.T
+
+	for ntest in range(0,test_size):
+		minimum_error = 99999999999999999999999999
+		start_time = time.time()
+		for ntrain in range(0,train_size):
+			error =  projected_test[ntest]-projected_train[ntrain]
+			l2_error = norm(error)
+			if l2_error<minimum_error:
+				minimum_error = l2_error
+				label = Y_train[ntrain]
+				pos = ntrain
+					
+		if Y_test[ntest] == label:	
+			if mode == 'success':
+				predicted = Y_train[label]
+				actual = Y_test[ntest]
+				#print("Predicted =", predicted)
+				#print("Correct =", actual)
+				compare_test_train_projections(projected_test,projected_train,predicted,actual,name='success')
+				break
+					
+		if Y_test[ntest] != label:
+			if mode == 'fail':
+				predicted = Y_train[label]
+				actual = Y_test[ntest]
+				#print("Predicted =", predicted)
+				#print("Correct =", actual)
+				compare_test_train_projections(projected_test,projected_train,predicted,actual,name='fail')
+				break
+  
 def LD_NN_classifier(M_list_NN,A_train,A_test,Y_train,Y_test,eigenvectors_hd,mode,save):
+
+	def compare_test_train_projections(projected_test,projected_train,predicted,actual,name):		
+		marker_name = str(predicted)	
+		label = predicted	
+				
+		fig = plt.figure()
+		ax = fig.add_subplot(111, projection='3d')
+				
+		### PROJECT PREDICTIONS (BLUE)
+		x_test = projected_test[ntest][0]
+		y_test = projected_test[ntest][1]
+		z_test = projected_test[ntest][2]
+		ax.scatter(x_test,y_test,z_test, c='blue', marker='x', s=20, label='Predicted Data')
+		ax.text(x_test,y_test,z_test,marker_name,color='blue',fontsize=12)
+
+		if name == 'success':
+			### PROJECT CORRECT CLASS (GREEN)
+			for i in range(0,8):
+				Label = Y_train[(label-1)*8+i]
+				x_train = projected_train[(label-1)*8+i][0]
+				y_train = projected_train[(label-1)*8+i][1]
+				z_train = projected_train[(label-1)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="green", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10, label='Correct Predicted Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10)
+					
+			### PROJECT NEXT 3 CLASSES (BLACK)
+			for i in range(0,24):
+				Label = Y_train[(label)*8+i]
+				x_train = projected_train[(label)*8+i][0]
+				y_train = projected_train[(label)*8+i][1]
+				z_train = projected_train[(label)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="black", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='black', marker='o', s=10, label='Next 3 Training Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='black', marker='o', s=10)
+					
+		if name == 'fail':
+			### PROJECT CORRECT CLASS (GREEN)
+			label = actual
+			for i in range(0,8):
+				Label = Y_train[(label-1)*8+i]
+				x_train = projected_train[(label-1)*8+i][0]
+				y_train = projected_train[(label-1)*8+i][1]
+				z_train = projected_train[(label-1)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="green", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10, label='Correct Predicted Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='green', marker='^', s=10)
+					
+			### PROJECT WRONGLY PREDICTED CLASS (RED)
+			label = predicted
+			for i in range(0,8):
+				Label = Y_train[(label-1)*8+i]
+				x_train = projected_train[(label-1)*8+i][0]
+				y_train = projected_train[(label-1)*8+i][1]
+				z_train = projected_train[(label-1)*8+i][2]
+				ax.text(x_train,y_train,z_train,str(Label), color="red", fontsize=12)
+				if i == 0:
+					ax.scatter(x_train,y_train,z_train, c='red', marker='^', s=10, label='Wrong Predicted Class')
+				else:
+					ax.scatter(x_train,y_train,z_train, c='red', marker='^', s=10)
+
+		ax.legend(loc = 'lower right')
+		title = str("Projection of "+str(name)+" into best 3 Principal Components")
+		plt.title(title)
+		plt.show()
+		plt.close()			
+		return None
+
 	if mode == 'None':
 		return None
 	if mode == 'conmatrix':
@@ -498,6 +705,9 @@ def LD_NN_classifier(M_list_NN,A_train,A_test,Y_train,Y_test,eigenvectors_hd,mod
 		W_train = np.dot(A_train,__U.T)	
 		W_test = np.dot(A_test,__U.T)
 		
+		projected_train = W_train
+		projected_test = W_test
+		
 		for ntest in range(0,test_size):
 			minimum_error = 999999999
 			start_time = time.time()
@@ -512,7 +722,14 @@ def LD_NN_classifier(M_list_NN,A_train,A_test,Y_train,Y_test,eigenvectors_hd,mod
 			if Y_test[ntest] == label:
 				success = success + 1
 				font_size=10
+				
+				
 				if mode == 'success':
+					
+					predicted = Y_train[label]
+					actual = Y_test[ntest]
+					compare_test_train_projections(projected_test,projected_train,predicted,actual,name='success')
+
 					index1=1
 					index2=0
 					index3=0
@@ -556,6 +773,11 @@ def LD_NN_classifier(M_list_NN,A_train,A_test,Y_train,Y_test,eigenvectors_hd,mod
 					
 			if Y_test[ntest] != label:
 				font_size=10
+				
+				predicted = Y_train[label]
+				actual = Y_test[ntest]
+				compare_test_train_projections(projected_test,projected_train,predicted,actual,name='fail')
+				
 				if mode == 'fail':
 					index1=1
 					index2=0
@@ -597,6 +819,7 @@ def LD_NN_classifier(M_list_NN,A_train,A_test,Y_train,Y_test,eigenvectors_hd,mod
 						plt.show()
 						plt.close()
 					mode = 'none'
+					sys.exit()
 
 			recognition_time = time.time() - start_time	
 		success_rate = success/test_size*100
@@ -693,18 +916,18 @@ def LD_NN_classifier(M_list_NN,A_train,A_test,Y_train,Y_test,eigenvectors_hd,mod
 
 
 ######### CONFIGURATION #########
-show_mean_face = 'yes'								# mode='yes'/'no'
+show_mean_face = 'no'								# mode='yes'/'no'
 save_mean_face = 'no'								# mode='yes'/'no'
 
-show_top_50_eigenfaces = 'show'						# mode='show'/'none'
+show_top_50_eigenfaces = 'none'						# mode='show'/'none'
 
-compare_high_and_low_dim_eigenvalues = 'plot'		# mode='plot'/'none'
+compare_high_and_low_dim_eigenvalues = 'none'		# mode='plot'/'none'
 
-PCA_reconstruction_mode = 'show'					# mode=save/show/time/error
-PCA_plot_reconstruction_error = 'show'				# mode='show'/'save'
-PCA_plot_reconstruction_time = 'show'				# mode='show'/'save'
+PCA_reconstruction_mode = 'none'					# mode=save/show/time/error
+PCA_plot_reconstruction_error = 'none'				# mode='show'/'save'
+PCA_plot_reconstruction_time = 'none'				# mode='show'/'save'
 
-Nearest_Neighbour_Classifier_mode = 'print'			# mode='plot time'/'plot rate'/'plot mem'/'print'/'success'/'fail'/'conmatrix', save='yes'/'no'
+Nearest_Neighbour_Classifier_mode = 'fail'		# mode='plot time'/'plot rate'/'plot mem'/'print'/'success'/'fail'/'conmatrix', save='yes'/'no'
 Nearest_Neighbour_Classifier_save = 'no'			# save='yes'/'no'
 
 ########### MAIN CODE ###########
