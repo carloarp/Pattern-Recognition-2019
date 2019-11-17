@@ -436,6 +436,7 @@ def main():
 		Wpcalda_sum = [0]
 		for t in range(0,T):
 			Wpcalda_sum = Wpcalda_sum + Wopt_list[t]
+		Wpcalda_sum = np.divide(Wpcalda_sum,T)
 		sum_success_rate = PCA_LDA_classifier(X_train,X_test,Y_train,Y_test,Wpcalda_sum)
 		print("Sum Success Rate for T =",T," is ",sum_success_rate,"%\n")
 		
